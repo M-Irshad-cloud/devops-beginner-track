@@ -1,4 +1,4 @@
-﻿services:
+services:
   app:
     build: .
     expose:
@@ -17,5 +17,30 @@
     networks:
       - appnet
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - app
+    networks:
+      - appnet
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - appnet
+
 networks:
   appnet:
+
+volumes:
+  grafana-data:
