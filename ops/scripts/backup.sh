@@ -25,7 +25,7 @@ if ! tar -tzf "$archive" > /dev/null; then
   exit 1
 fi
 
-echo "$(date '+%F %T') BACKUP OK $archive ($(du -h "$archive" | cut -f1))"
+echo "$(date '+%F %T') BACKUP OK $archive ($(stat -c %s "$archive") bytes)"
 
 # Retention: keep the newest $KEEP archives, delete the rest
 mapfile -t old < <(ls -1t "$DEST"/backup-*.tar.gz | tail -n +$((KEEP + 1)))
