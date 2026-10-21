@@ -3,3 +3,4 @@
 nginx.log
 backups/
 logs/
+*.tar
