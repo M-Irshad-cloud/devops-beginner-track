@@ -1,0 +1,14 @@
+services:
+  ops:
+    build: ./ops
+    volumes:
+      - ./data:/ops/data
+      - ./backups:/ops/backups
+      - ./logs:/ops/logs
+    depends_on:
+      - app
+      - nginx
+      - prometheus
+      - grafana
+    networks:
+      - appnet
