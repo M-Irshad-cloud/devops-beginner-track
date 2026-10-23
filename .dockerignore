@@ -1,0 +1,12 @@
+.git
+.github
+__pycache__/
+*.pyc
+backups/
+logs/
+data/
+site/
+ops/
+k8s/
+*.log
+*.tar
