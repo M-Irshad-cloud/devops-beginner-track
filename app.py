@@ -30,7 +30,7 @@ def record_metrics(response):
 
 @app.route("/")
 def home():
-    return jsonify({"message": "Hello from v2!"})
+    return jsonify({"message": "Hello from Helm!"})
 
 
 @app.route("/health")

@@ -1,0 +1,2 @@
+{{ include "hello-app.fullname" . }} deployed with image {{ .Values.image.repository }}:{{ .Values.image.tag }}
+Try it:  kubectl port-forward svc/{{ include "hello-app.fullname" . }} 8083:{{ .Values.service.port }}

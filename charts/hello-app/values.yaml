@@ -1,0 +1,20 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/m-irshad-cloud/devops-beginner-track
+  tag: sha-0004ea0
+  pullPolicy: IfNotPresent
+
+containerPort: 5000
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
