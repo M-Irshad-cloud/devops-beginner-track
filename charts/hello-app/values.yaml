@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: ghcr.io/m-irshad-cloud/devops-beginner-track
-  tag: sha-0004ea0
+  tag: sha-d102dc8
   pullPolicy: IfNotPresent
 
 containerPort: 5000
