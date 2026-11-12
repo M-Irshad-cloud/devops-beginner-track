@@ -3,8 +3,22 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'app.py'
+      - 'test_app.py'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'app.py'
+      - 'test_app.py'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/**'
 
 env:
   IMAGE: ghcr.io/m-irshad-cloud/devops-beginner-track
@@ -71,3 +85,46 @@ jobs:
           docker tag "$IMAGE:$TAG" "$IMAGE:latest"
           docker push "$IMAGE:$TAG"
           docker push "$IMAGE:latest"
+
+  deploy:
+    needs: image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: gitops-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Compute image tag
+        run: echo "TAG=sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Point the chart at the new image
+        run: |
+          sed -i "s|^  tag: .*|  tag: ${TAG}|" charts/hello-app/values.yaml
+          grep -q "^  tag: ${TAG}" charts/hello-app/values.yaml
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet; then
+            echo "values.yaml already points at ${TAG}; nothing to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add charts/hello-app/values.yaml
+          git commit -m "deploy: ${TAG} [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Could not push after 3 attempts"
+          exit 1

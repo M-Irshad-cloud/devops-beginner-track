@@ -4,7 +4,7 @@ from app import app
 def test_home():
     response = app.test_client().get("/")
     assert response.status_code == 200
-    assert response.get_json()["message"] == "Hello from Helm!"
+    assert response.get_json()["message"] == "Hello from GitOps!"
 
 
 def test_health():
