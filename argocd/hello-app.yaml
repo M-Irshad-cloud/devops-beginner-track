@@ -18,3 +18,4 @@ spec:
     automated:
       prune: true
       selfHeal: true
+# comment-only change: CI must not run
