@@ -18,3 +18,10 @@ resources:
   limits:
     cpu: 200m
     memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 50
+  scaleDownStabilizationSeconds: 60
