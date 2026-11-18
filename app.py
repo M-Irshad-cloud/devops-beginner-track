@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, Response
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import os
 import time
 
 app = Flask(__name__)
@@ -41,6 +42,15 @@ def health():
 @app.route("/metrics")
 def metrics():
     return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
+
+# Fault injection for alerting drills. The route only exists when ENABLE_FAULTS=1,
+# so a normal deployment (like the Kubernetes one) has no /fail endpoint at all.
+if os.environ.get("ENABLE_FAULTS") == "1":
+
+    @app.route("/fail")
+    def fail():
+        return jsonify({"error": "injected failure"}), 500
 
 
 if __name__ == "__main__":

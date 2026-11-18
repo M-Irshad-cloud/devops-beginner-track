@@ -19,3 +19,8 @@ def test_metrics():
     response = client.get("/metrics")
     assert response.status_code == 200
     assert b"http_requests_total" in response.data
+
+
+def test_fault_route_is_disabled_by_default():
+    response = app.test_client().get("/fail")
+    assert response.status_code == 404

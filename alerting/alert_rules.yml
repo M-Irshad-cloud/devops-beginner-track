@@ -1,0 +1,21 @@
+groups:
+  - name: app-alerts
+    rules:
+      - alert: AppDown
+        expr: up{job="flask-app"} == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "flask-app is down: no successful scrape for 15s"
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5..", endpoint!="/metrics"}[30s]))
+            /
+          sum(rate(http_requests_total{endpoint!="/metrics"}[30s])) > 0.2
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 20% of requests are failing with 5xx"

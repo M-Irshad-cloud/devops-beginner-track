@@ -1,0 +1,86 @@
+rule_files:
+  - alert_rules.yml
+
+evaluation_interval: 5s
+
+tests:
+  # 1. App goes down at t=30s and comes back at t=85s
+  - interval: 5s
+    input_series:
+      - series: 'up{job="flask-app"}'
+        values: '1x5 0x10 1x5'
+    alert_rule_test:
+      - eval_time: 25s
+        alertname: AppDown
+        exp_alerts: []
+      - eval_time: 35s
+        alertname: AppDown
+        exp_alerts: []
+      - eval_time: 55s
+        alertname: AppDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: flask-app
+            exp_annotations:
+              summary: "flask-app is down: no successful scrape for 15s"
+      - eval_time: 100s
+        alertname: AppDown
+        exp_alerts: []
+
+  # 2. Half of all requests fail with a 500
+  - interval: 5s
+    input_series:
+      - series: 'http_requests_total{method="GET",endpoint="/",status="200"}'
+        values: '0+10x20'
+      - series: 'http_requests_total{method="GET",endpoint="/fail",status="500"}'
+        values: '0+10x20'
+    alert_rule_test:
+      - eval_time: 60s
+        alertname: HighErrorRate
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: "More than 20% of requests are failing with 5xx"
+
+  # 3. Healthy traffic: there is no 5xx series at all
+  - interval: 5s
+    input_series:
+      - series: 'http_requests_total{method="GET",endpoint="/",status="200"}'
+        values: '0+10x20'
+    alert_rule_test:
+      - eval_time: 60s
+        alertname: HighErrorRate
+        exp_alerts: []
+
+  # 4. Failures on /metrics (Prometheus' own scrapes) must be ignored
+  - interval: 5s
+    input_series:
+      - series: 'http_requests_total{method="GET",endpoint="/metrics",status="500"}'
+        values: '0+10x20'
+      - series: 'http_requests_total{method="GET",endpoint="/",status="200"}'
+        values: '0+10x20'
+    alert_rule_test:
+      - eval_time: 60s
+        alertname: HighErrorRate
+        exp_alerts: []
+
+  # 5. Errors stop at t=50s: the alert fires, then resolves
+  - interval: 5s
+    input_series:
+      - series: 'http_requests_total{method="GET",endpoint="/",status="200"}'
+        values: '0+10x10 100x20'
+      - series: 'http_requests_total{method="GET",endpoint="/fail",status="500"}'
+        values: '0+10x10 100x20'
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: HighErrorRate
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: "More than 20% of requests are failing with 5xx"
+      - eval_time: 120s
+        alertname: HighErrorRate
+        exp_alerts: []

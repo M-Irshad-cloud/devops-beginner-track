@@ -1,6 +1,8 @@
 services:
   app:
     build: .
+    environment:
+      - ENABLE_FAULTS=1
     expose:
       - "5000"
     networks:
@@ -23,8 +25,29 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerting/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
     depends_on:
       - app
+      - alertmanager
+    networks:
+      - appnet
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alerting/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    depends_on:
+      - webhook
+    networks:
+      - appnet
+
+  webhook:
+    image: python:3.12-slim
+    command: ["python", "-u", "/app/receiver.py"]
+    volumes:
+      - ./alerting/receiver.py:/app/receiver.py:ro
     networks:
       - appnet
 
