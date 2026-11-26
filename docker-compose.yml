@@ -1,5 +1,6 @@
 services:
   app:
+    restart: unless-stopped
     build: .
     environment:
       - ENABLE_FAULTS=1
@@ -9,6 +10,7 @@ services:
       - appnet
 
   nginx:
+    restart: unless-stopped
     image: nginx:alpine
     ports:
       - "8080:80"
@@ -20,6 +22,7 @@ services:
       - appnet
 
   prometheus:
+    restart: unless-stopped
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
@@ -33,6 +36,7 @@ services:
       - appnet
 
   alertmanager:
+    restart: unless-stopped
     image: prom/alertmanager:latest
     ports:
       - "9093:9093"
@@ -44,6 +48,7 @@ services:
       - appnet
 
   webhook:
+    restart: unless-stopped
     image: python:3.12-slim
     command: ["python", "-u", "/app/receiver.py"]
     volumes:
@@ -52,6 +57,7 @@ services:
       - appnet
 
   loki:
+    restart: unless-stopped
     image: grafana/loki:latest
     command: ["-config.file=/etc/loki/local-config.yaml"]
     ports:
@@ -62,6 +68,7 @@ services:
       - appnet
 
   alloy:
+    restart: unless-stopped
     image: grafana/alloy:latest
     user: "0:0"
     command:
@@ -81,6 +88,7 @@ services:
       - appnet
 
   grafana:
+    restart: unless-stopped
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
